@@ -1,8 +1,11 @@
 package data;
 
+import java.util.LinkedList;
+import java.util.List;
+
+
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 
 import data.DataParser;
 import data.Ecole;
@@ -23,36 +26,20 @@ public class ParserEtudiant extends DataParser<Etudiant> {
 	}
 	
 	@Override
-	public Etudiant[] parse() throws Exception{
-		Etudiant[] etu;
+	public List<Etudiant> parse() throws Exception{
 		HSSFRow row;
 		HSSFCell cell;
 
-		int rows; // No of rows
-		rows = sheet.getPhysicalNumberOfRows();
-
-		int cols = 0; // No of columns
-		int tmp = 0;
-
-		// This trick ensures that we get the data properly even if it doesn't start from first few rows
-		for(int i = 0; i < 10 || i < rows; i++) {
-			row = sheet.getRow(i);
-			if(row != null) {
-				tmp = sheet.getRow(i).getPhysicalNumberOfCells();
-				if(tmp > cols) cols = tmp;
-			}
-		}
+		int rows = getNumberOfRows(); // No of rows
+		int cols = getNumberOfColumns(); // No of columns
 		
-		etu = new Etudiant[rows-1];
+		String nom = null, prenom = null, mail = null;
+		Ecole ecole = null;
+		boolean jumelage = false;
 		
 		for(int r = 1; r < rows; r++) {
 			row = sheet.getRow(r);
 			if(row != null) {
-				String nom=null,
-						prenom=null,
-						mail=null;
-				Ecole ecole = null;
-				boolean jumelage = false;
 				for(int c = 1; c < cols; c++) {
 					cell = row.getCell((short)c);
 					if(cell != null) {
@@ -71,21 +58,9 @@ public class ParserEtudiant extends DataParser<Etudiant> {
 					}
 				}
 				if (prenom != null && nom != null && mail != null && ecole != Ecole.NA)
-					etu[r-1] = new Etudiant(prenom,nom,mail,jumelage,ecole);
+					data.add(new Etudiant(prenom,nom,mail,jumelage,ecole));
 			}
 		}
-		int effectiveNumber = 0;
-		for(Etudiant e : etu) 
-			if(e != null)
-				effectiveNumber++;
-		Etudiant[] etudiants = new Etudiant[effectiveNumber];
-		int index = 0;
-		for(Etudiant e : etu) {
-			if(e != null) {
-				etudiants[index] = e;
-				index++;
-			}
-		}
-		return etudiants;
+		return data;
 	}
 }
